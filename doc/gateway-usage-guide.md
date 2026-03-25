@@ -28,6 +28,7 @@ Firecrawl Gateway is an authenticated proxy for self-hosted Firecrawl. It provid
 |----------|----------|-------------|
 | `FIRECRAWL_GATEWAY_API_TOKENS` | One of these | Comma-separated anonymous tokens |
 | `FIRECRAWL_GATEWAY_CLIENT_TOKENS` | required | JSON: `{"clientId":"token"}` |
+| `FIRECRAWL_GATEWAY_WEBHOOK_SECRET` | No | Secret for HMAC-SHA256 webhook signing |
 | `FIRECRAWL_URL` | Yes | Firecrawl API URL |
 | `PORT` | No | Gateway port (default: 3000) |
 | `LOG_LEVEL` | No | Log level (default: info) |
@@ -257,16 +258,52 @@ curl -X POST http://localhost:3000/extract \
 
 When `webhookUrl` is provided in crawl requests, the gateway POSTs results on completion:
 
-```json
+**Headers:**
+```
 POST https://your-app.com/webhook/crawl-complete
 Content-Type: application/json
+X-Webhook-Event: crawl.completed
+X-Job-Id: abc-123-def
+X-Webhook-Signature: sha256=<hmac-signature>  # If FIRECRAWL_GATEWAY_WEBHOOK_SECRET is set
+X-Webhook-Timestamp: 1234567890123            # If FIRECRAWL_GATEWAY_WEBHOOK_SECRET is set
+```
 
+**Body:**
+```json
 {
   "jobId": "abc-123-def",
   "status": "completed",
   "pages": [...],
   "totalPages": 5
 }
+```
+
+**Verifying Webhook Signature (TypeScript):**
+```typescript
+import { createHmac } from 'node:crypto';
+
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  const expectedSig = createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+  return signature === `sha256=${expectedSig}`;
+}
+
+// In your webhook handler:
+app.post('/webhook/crawl-complete', (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const rawBody = JSON.stringify(req.body);
+
+  if (!verifyWebhookSignature(rawBody, signature, WEBHOOK_SECRET)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  // Process webhook...
+});
 ```
 
 ---

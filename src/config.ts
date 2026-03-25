@@ -25,6 +25,8 @@ const envSchema = z.object({
     .transform((val) => val.split(',').map((t) => t.trim()).filter(Boolean)),
   // Per-client tokens with client identification (JSON format)
   FIRECRAWL_GATEWAY_CLIENT_TOKENS: clientTokensSchema,
+  // Webhook secret for HMAC signing (optional but recommended)
+  FIRECRAWL_GATEWAY_WEBHOOK_SECRET: z.string().optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   FIRECRAWL_URL: z.string().url().default('http://localhost:3002'),
 });

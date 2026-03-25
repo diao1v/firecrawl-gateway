@@ -124,6 +124,7 @@ firecrawl-gateway/
 |----------|----------|-------------|
 | `FIRECRAWL_GATEWAY_API_TOKENS` | One required | Comma-separated anonymous tokens |
 | `FIRECRAWL_GATEWAY_CLIENT_TOKENS` | | JSON map: `{"clientId":"token"}` |
+| `FIRECRAWL_GATEWAY_WEBHOOK_SECRET` | No | Secret for HMAC-SHA256 webhook signing |
 | `FIRECRAWL_URL` | Yes | Firecrawl API URL |
 | `PORT` | No | Gateway port (default: 3000) |
 | `LOG_LEVEL` | No | fatal/error/warn/info/debug/trace (default: info) |
@@ -194,6 +195,7 @@ Error codes: `UNAUTHORIZED`, `VALIDATION_ERROR`, `UPSTREAM_ERROR`, `TIMEOUT`, `I
 
 - Timing-safe token comparison (prevents timing attacks)
 - SSRF protection for webhook URLs (blocks private IPs)
+- Webhook HMAC-SHA256 signing (prevents webhook spoofing)
 - Request ID tracking for traceability
 - Client identification in logs
 - Zod validation on all inputs

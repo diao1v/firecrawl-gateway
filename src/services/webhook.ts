@@ -1,8 +1,14 @@
+import { createHmac } from 'node:crypto';
+import { config } from '../config.js';
 import { logger } from '../lib/logger.js';
 import { withRetry } from '../lib/retry.js';
 import type { WebhookPayload } from '../schemas/crawl.js';
 
 const WEBHOOK_TIMEOUT = 10000;
+
+function signPayload(payload: string, secret: string): string {
+  return createHmac('sha256', secret).update(payload).digest('hex');
+}
 
 export class WebhookService {
   async deliver(
@@ -19,6 +25,20 @@ export class WebhookService {
 
     childLogger.info('Delivering webhook');
 
+    const body = JSON.stringify(payload);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'X-Webhook-Event': 'crawl.completed',
+      'X-Job-Id': payload.jobId,
+    };
+
+    // Add HMAC signature if webhook secret is configured
+    if (config.FIRECRAWL_GATEWAY_WEBHOOK_SECRET) {
+      const signature = signPayload(body, config.FIRECRAWL_GATEWAY_WEBHOOK_SECRET);
+      headers['X-Webhook-Signature'] = `sha256=${signature}`;
+      headers['X-Webhook-Timestamp'] = Date.now().toString();
+    }
+
     try {
       await withRetry(
         async () => {
@@ -28,12 +48,8 @@ export class WebhookService {
           try {
             const response = await fetch(webhookUrl, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Webhook-Event': 'crawl.completed',
-                'X-Job-Id': payload.jobId,
-              },
-              body: JSON.stringify(payload),
+              headers,
+              body,
               signal: controller.signal,
             });
 
