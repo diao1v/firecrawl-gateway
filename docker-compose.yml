@@ -1,0 +1,21 @@
+# Gateway only - for development or when Firecrawl runs separately
+# Usage: docker compose up -d
+# Requires: FIRECRAWL_URL to point to your Firecrawl instance
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - FIRECRAWL_GATEWAY_API_TOKENS=${FIRECRAWL_GATEWAY_API_TOKENS}
+      - FIRECRAWL_GATEWAY_CLIENT_TOKENS=${FIRECRAWL_GATEWAY_CLIENT_TOKENS:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - FIRECRAWL_URL=${FIRECRAWL_URL:-http://host.docker.internal:3002}
+      - NODE_ENV=production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
