@@ -8,6 +8,7 @@ import { scrape } from './routes/scrape.js';
 import { crawl } from './routes/crawl.js';
 import { extract } from './routes/extract.js';
 import { batchScrape } from './routes/batch-scrape.js';
+import { internalWebhooks } from './routes/internal-webhooks.js';
 import { AppError, InternalError } from './lib/errors.js';
 import { logger } from './lib/logger.js';
 import type { AppVariables } from './types/index.js';
@@ -20,6 +21,9 @@ app.use('*', loggerMiddleware);
 
 // Health check (no auth required)
 app.route('/health', health);
+
+// Internal webhooks (no auth - receives from Firecrawl)
+app.route('/internal/webhooks', internalWebhooks);
 
 // Protected routes (auth required)
 app.use('/scrape/*', authMiddleware);

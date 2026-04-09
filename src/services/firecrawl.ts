@@ -349,25 +349,20 @@ export class FirecrawlService {
         const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
         try {
+          // Build request body with only parameters supported by self-hosted Firecrawl
           const requestBody: Record<string, unknown> = {
             urls: request.urls,
             formats: request.formats || ['markdown'],
             includeTags: request.includeTags,
             excludeTags: request.excludeTags,
+            waitFor: request.waitFor,
           };
 
-          if (request.changeTracking) {
-            requestBody.changeTracking = true;
-            if (request.changeTrackingOptions) {
-              requestBody.changeTrackingOptions = request.changeTrackingOptions;
-            }
-          }
+          // Note: changeTracking is not supported by self-hosted Firecrawl
 
           if (request.webhookUrl) {
             requestBody.webhook = request.webhookUrl;
-            if (request.webhookEvents) {
-              requestBody.webhookEvents = request.webhookEvents;
-            }
+            // Note: webhookEvents is handled by the gateway, not sent to Firecrawl
           }
 
           const response = await fetch(`${this.baseUrl}/v1/batch/scrape`, {

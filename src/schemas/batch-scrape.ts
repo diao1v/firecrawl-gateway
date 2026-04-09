@@ -6,6 +6,7 @@ export const batchScrapeRequestSchema = z.object({
   formats: z.array(formatSchema).optional().default(['markdown']),
   includeTags: z.array(z.string()).optional(),
   excludeTags: z.array(z.string()).optional(),
+  waitFor: z.number().int().positive().max(30000).optional(),
   changeTracking: z.boolean().optional(),
   changeTrackingOptions: changeTrackingOptionsSchema.optional(),
   webhookUrl: urlSchema.optional(),

@@ -64,6 +64,7 @@ crawl.post('/', async (c) => {
   // Store job metadata for webhook delivery
   jobStore.set(jobId, {
     webhookUrl: request.webhookUrl,
+    jobType: 'crawl',
   });
 
   return c.json({

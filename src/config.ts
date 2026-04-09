@@ -17,6 +17,8 @@ const clientTokensSchema = z
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
+  // Gateway's own base URL (used for webhook callbacks from Firecrawl)
+  FIRECRAWL_GATEWAY_BASE_URL: z.string().url().optional(),
   // Anonymous API tokens (comma-separated)
   FIRECRAWL_GATEWAY_API_TOKENS: z
     .string()
@@ -27,6 +29,8 @@ const envSchema = z.object({
   FIRECRAWL_GATEWAY_CLIENT_TOKENS: clientTokensSchema,
   // Webhook secret for HMAC signing (optional but recommended)
   FIRECRAWL_GATEWAY_WEBHOOK_SECRET: z.string().optional(),
+  // Allow localhost webhooks (for local development only!)
+  ALLOW_LOCAL_WEBHOOKS: z.coerce.boolean().default(false),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   FIRECRAWL_URL: z.string().url().default('http://localhost:3002'),
 });

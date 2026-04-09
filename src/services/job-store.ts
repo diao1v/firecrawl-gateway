@@ -1,6 +1,10 @@
+type WebhookEventType = 'started' | 'page' | 'completed';
+
 interface JobMetadata {
   webhookUrl?: string;
   webhookDelivered: boolean;
+  webhookEvents?: WebhookEventType[];
+  jobType: 'crawl' | 'batch-scrape';
   createdAt: Date;
 }
 
@@ -13,6 +17,15 @@ class JobStore {
       webhookDelivered: false,
       createdAt: new Date(),
     });
+  }
+
+  // Check if job should receive a specific webhook event
+  shouldDeliverEvent(jobId: string, eventType: WebhookEventType): boolean {
+    const job = this.jobs.get(jobId);
+    if (!job?.webhookUrl) return false;
+    // If no specific events configured, deliver all
+    if (!job.webhookEvents || job.webhookEvents.length === 0) return true;
+    return job.webhookEvents.includes(eventType);
   }
 
   get(jobId: string): JobMetadata | undefined {

@@ -1,4 +1,5 @@
 import { URL } from 'node:url';
+import { config } from '../config.js';
 
 // Private IP ranges that should be blocked for SSRF protection
 const PRIVATE_IP_PATTERNS = [
@@ -57,7 +58,8 @@ export function validateWebhookUrl(urlString: string): { valid: boolean; error?:
       return { valid: false, error: 'Webhook URL must use HTTP or HTTPS protocol' };
     }
 
-    if (isPrivateUrl(urlString)) {
+    // Skip SSRF check if local webhooks are allowed (for development)
+    if (!config.ALLOW_LOCAL_WEBHOOKS && isPrivateUrl(urlString)) {
       return { valid: false, error: 'Webhook URL cannot point to private or local addresses' };
     }
 

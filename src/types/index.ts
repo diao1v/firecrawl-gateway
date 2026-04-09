@@ -136,6 +136,7 @@ export interface FirecrawlBatchScrapeRequest {
   formats?: string[];
   includeTags?: string[];
   excludeTags?: string[];
+  waitFor?: number;
   changeTracking?: boolean;
   changeTrackingOptions?: ChangeTrackingOptions;
   webhookUrl?: string;
